@@ -12,7 +12,7 @@ required to gradually bring the system to a goal.
 
 ## Stage 1 — Initial Boot (Real Mode)
 
-**Responsibilities:**
+**Requirements:**
 - Initialize segment registers (`SS:SP`, `DS`, `ES`)
 - Enable the A20 gate
 - Load Stage 2 into memory
@@ -22,7 +22,7 @@ required to gradually bring the system to a goal.
 
 ## Stage 2 — Hardware Discovery & Setup
 
-**Responsibilities:**
+**Requirements:**
 - Collect the system memory map using E820 and store it in a buffer
 - Prepare for protected mode
 - Build a minimal Global Descriptor Table (GDT)
@@ -31,7 +31,7 @@ required to gradually bring the system to a goal.
 
 ## Stage 3 — Protected Mode Transition
 
-**Responsibilities:**
+**Requirements:**
 - Switch the CPU to protected mode
 - Confirm protected mode by displaying a message
 
@@ -39,7 +39,7 @@ required to gradually bring the system to a goal.
 
 ## Stage 4 — Memory Layout Display
 
-**Responsibilities:**
+**Requirements:**
 - Display the E820 memory layout
 - Show usable and reserved memory regions
 
@@ -47,13 +47,6 @@ required to gradually bring the system to a goal.
 
 ## Stage 5 — Halt
 
-**Responsibilities:**
+**Requirements:**
 - Halt CPU execution safely
 
----
-
-## Goals
-
-- Learn the x86 boot process in depth
-- Practice bare-metal programming
-- Build a foundation for future kernel development
