@@ -1,9 +1,6 @@
 # OS-Experiments
 
-This repository contains low-level operating system experiments, starting with a
-multi-stage x86 bootloader. The project focuses on understanding the boot process
-from BIOS handoff through protected mode setup.
-
+This repository contains low-level operating system experiments.
 ---
 
 ## Mini Bootloader Architecture
