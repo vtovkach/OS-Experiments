@@ -29,7 +29,18 @@ start:
     ;   AX = 0  -> A20 disabled
     ;   AX = 1  -> A20 enabled
     call check_a20
+    
+    test ax, ax 
+    jz .msg
 
+    mov si, a20_e_msg
+    call printStatus
+    jmp .end_msg
+.msg:
+    mov si, a20_ne_msg
+    call printStatus
+.end_msg:
+    
     jmp done 
 
 ; Check A20 Address Line  
@@ -69,11 +80,11 @@ check_a20:
     mov [es:di], al 
 
     mov ax, 0 
-    je check_a20_exit
+    je .check_a20_exit
 
     mov ax, 1 
 
-check_a20_exit:
+.check_a20_exit:
     pop si 
     pop di
     pop es 
@@ -85,15 +96,15 @@ check_a20_exit:
 ; Set SI to point to the message before the function call
 printStatus:
     cld 
-beg:
+.beg:
     lodsb 
     test al, al 
-    jz end_print 
+    jz .end_print 
     mov ah, 0x0E
     mov bh, 0x00
     int 0x10
-    jmp beg 
-end_print:
+    jmp .beg 
+.end_print:
     ret 
 
 ; Halt CPU 
