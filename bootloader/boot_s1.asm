@@ -111,11 +111,11 @@ done:
 
 ; Message to indicate successful boot 
 success_msg:
-    db "Boot Success", 0 
+    db "Boot Success", 0x0D, 0x0A, 0
 a20_e_msg:
-    db "A20 address line is enabled", 0
+    db "A20 address line is enabled", 0x0D, 0x0A, 0
 a20_ne_msg:
-    db "A20 is not enabled", 0
+    db "A20 is not enabled", 0x0D, 0x0A, 0
 
 ; Boot signature 
 times 510-($-$$) db 0 
