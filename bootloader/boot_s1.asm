@@ -26,13 +26,18 @@ verify_boot:
     cld 
     lodsb 
     test al, al 
-    jz check_a20
+    jz a20_disable_fast
     mov ah, 0x0E
     mov bh, 0x00 
     int 0x10 
     jmp verify_boot
 
-
+a20_disable_fast:
+    in   al, 0x92
+    and  al, 0xFD        ; clear bit 1 (A20)
+    ; keep bit 0 as-is (important)
+    out  0x92, al
+    
 check_a20:
     pushf 
     push ds
