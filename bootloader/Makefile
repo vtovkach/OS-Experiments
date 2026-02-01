@@ -15,7 +15,7 @@ SECTORS     := 33
 IMG := $(DISK_DIR)/disk.img
 
 # QEMU
-QEMU := qemu-system-x86_64
+QEMU := qemu-system-i386
 
 all: $(BIN_DIR)/$(STAGE1).bin $(BIN_DIR)/$(STAGE2).bin
 
