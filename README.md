@@ -13,7 +13,7 @@ This repository contains low-level operating system experiments.
 
 ## Reference Documents
 
-- [Intel® Software Developer’s Manual]()
+- [Intel® Software Developer’s Manual](https://github.com/vtovkach/OS-Experiments/tree/main/docs)
 - [BIOS Interrupt Reference](https://wiki.osdev.org/BIOS)
 - [OSDev Wiki Articles](https://wiki.osdev.org/Expanded_Main_Page)
 - [x86 Real-Mode Memory Map](https://wiki.osdev.org/Memory_Map_(x86))
