@@ -18,6 +18,10 @@ stage2_start:
     ; Retrieve memory layout 
     call get_e820
 
+    ; Display E820 Success Message 
+    mov si, e820_retrieve_msg
+    call printStatus
+
     jmp halt
 
 ; Set SI to point to the message before the function call
@@ -91,6 +95,7 @@ halt:
 ; Status Messages
 ; --------------- 
 stage2_success_msg: db "Second stage loaded successfully", 0x0D, 0x0A, 0
+e820_retrieve_msg:  db "E820 Retrieved Successfully", 0x0D, 0x0A, 0
 
 ; ------------------ 
 ; E820 Data 
