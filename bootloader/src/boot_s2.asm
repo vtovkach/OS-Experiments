@@ -108,7 +108,6 @@ get_e820:
 ;
 
 switch_mode: 
-
     cli 
 
     xor ax, ax 
