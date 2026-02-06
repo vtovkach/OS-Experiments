@@ -26,8 +26,8 @@ stage2_start:
     mov si, e820_retrieve_msg
     call printStatus
 
-    mov ax, 0x0013
-    int 0x10 
+    ; Sleep for 2 seconds before entering PM 
+    mov ah, 0x86          ; wait command 
 
     ; Enter Protected Mode 
     jmp switch_mode
