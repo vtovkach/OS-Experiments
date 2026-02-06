@@ -26,7 +26,6 @@ stage2_start:
     mov si, e820_retrieve_msg
     call printStatus
 
-
     mov ax, 0x0013
     int 0x10 
 
@@ -52,6 +51,9 @@ PM:
     add ebx, eax          ; + x
     mov byte [0xA0000 + ebx], dl
 
+    jmp halt
+
+[bits 16]
 ; Set SI to point to the message before the function call
 printStatus:
     cld 
