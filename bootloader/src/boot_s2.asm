@@ -32,28 +32,6 @@ stage2_start:
     ; Enter Protected Mode 
     jmp switch_mode
 
-[bits 32]
-PM:
-    mov ax, 0x10          ; DATA_SEL
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov esp, 0x90000      ; pick a safe stack
-
-    ; Draw one pixel in mode 13h at (10,10), color 15
-    mov eax, 10           ; x
-    mov ebx, 10           ; y
-    mov edx, 15           ; color in DL
-
-    imul ebx, ebx, 320    ; y*320
-    add ebx, eax          ; + x
-    mov byte [0xA0000 + ebx], dl
-
-    jmp halt
-
-[bits 16]
 ; Set SI to point to the message before the function call
 printStatus:
     cld 
@@ -193,5 +171,27 @@ gdt_desc:
 e820_count: dw 0
 e820_buf:
     times(E820_MAX*24) db 0
+
+
+[bits 32]
+PM:
+    mov ax, 0x10          ; DATA_SEL
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+    mov esp, 0x90000      ; pick a safe stack
+
+    ; Draw one pixel in mode 13h at (10,10), color 15
+    mov eax, 10           ; x
+    mov ebx, 10           ; y
+    mov edx, 15           ; color in DL
+
+    imul ebx, ebx, 320    ; y*320
+    add ebx, eax          ; + x
+    mov byte [0xA0000 + ebx], dl
+
+    jmp halt
 
 times (32*512) - ($-$$) db 0 
