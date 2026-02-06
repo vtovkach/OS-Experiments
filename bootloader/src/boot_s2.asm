@@ -186,15 +186,33 @@ PM:
     mov ss, ax
     mov esp, 0x00007C00   
 
-    ; Draw one pixel in mode 13h at (10,10), color 15
-    mov eax, 10           ; x
-    mov ebx, 10           ; y
-    mov edx, 15           ; color in DL
+    mov edi, 0xB8000
+    mov ecx, 80*25
+    mov ax, 0x0720
+    cld 
+    rep stosw
 
-    imul ebx, ebx, 320    ; y*320
-    add ebx, eax          ; + x
-    mov byte [0xA0000 + ebx], dl
+    mov esi, protected_mode_msg
+    mov edi, 0xB8000
+    mov ah, 0x0F  ; white on black 
+    cld 
+
+.print:
+    lodsb 
+    test al, al 
+    jz .done 
+    stosw 
+    jmp .print
+
+.done 
 
     jmp halt
+
+protected_mode_msg:
+    db "Protected Mode Entered Successfully"
+pm_msg_end: 
+
+
+PM_MSG_LEN  equ (pm_msg_end - protected_mode_msg)
 
 times (32*512) - ($-$$) db 0 
