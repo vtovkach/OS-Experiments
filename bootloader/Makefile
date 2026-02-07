@@ -1,57 +1,57 @@
 ASM := nasm
-ASMFLAGS :=
+CC := gcc
+LD := ld
+OBJCOPY := objcopy
 
-SRC_DIR  := src
-BIN_DIR  := bin
-DISK_DIR := disk
+SRC := src
+BIN := bin
+DISK := disk
 
-STAGE1 := boot_s1
-STAGE2 := boot_s2
+S1 := boot_s1
+S2 := boot_s2
+K  := mini_kernel
 
-# Disk layout
-SECTOR_SIZE    := 512
-STAGE2_SECTORS := 32
-TOTAL_SECTORS  := 33   # 1 + stage2
+BS := 512
+S2_SECT := 10
+K_SECT  := 12
+IMG := $(DISK)/disk.img
+LDS := kernel.ld
 
-IMG := $(DISK_DIR)/disk.img
-
-QEMU := qemu-system-i386
+CFLAGS := -m32 -ffreestanding -fno-pie -fno-pic -fno-stack-protector -O2
+LDFLAGS := -m elf_i386 -T $(LDS) -nostdlib
 
 all: image
 
-# Directories
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+$(BIN) $(DISK):
+	mkdir -p $@
 
-$(DISK_DIR):
-	mkdir -p $(DISK_DIR)
+$(BIN)/$(S1).bin: $(SRC)/$(S1).asm | $(BIN)
+	$(ASM) -f bin $< -o $@
 
-# -------------------------
-# Stage 1 (boot sector)
-# -------------------------
-$(BIN_DIR)/$(STAGE1).bin: $(SRC_DIR)/$(STAGE1).asm | $(BIN_DIR)
-	$(ASM) -f bin $(ASMFLAGS) $< -o $@
+$(BIN)/$(S2).bin: $(SRC)/$(S2).asm | $(BIN)
+	$(ASM) -f bin $< -o $@
 
-# -------------------------
-# Stage 2 (flat binary)
-# -------------------------
-$(BIN_DIR)/$(STAGE2).bin: $(SRC_DIR)/$(STAGE2).asm | $(BIN_DIR)
-	$(ASM) -f bin $(ASMFLAGS) $< -o $@
+$(BIN)/$(K).o: $(SRC)/$(K).c | $(BIN)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# -------------------------
-# Disk image
-# -------------------------
+$(BIN)/$(K).elf: $(BIN)/$(K).o $(LDS)
+	$(LD) $(LDFLAGS) -o $@ $<
+
+$(BIN)/$(K).bin: $(BIN)/$(K).elf
+	$(OBJCOPY) -O binary $< $@
+
 image: $(IMG)
 
-$(IMG): $(BIN_DIR)/$(STAGE1).bin $(BIN_DIR)/$(STAGE2).bin | $(DISK_DIR)
-	dd if=/dev/zero of=$@ bs=$(SECTOR_SIZE) count=$(TOTAL_SECTORS)
-	dd if=$(BIN_DIR)/$(STAGE1).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=0
-	dd if=$(BIN_DIR)/$(STAGE2).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=1 count=$(STAGE2_SECTORS)
+$(IMG): $(BIN)/$(S1).bin $(BIN)/$(S2).bin $(BIN)/$(K).bin | $(DISK)
+	dd if=/dev/zero of=$@ bs=$(BS) count=$$((1+$(S2_SECT)+$(K_SECT)))
+	dd if=$(BIN)/$(S1).bin of=$@ bs=$(BS) conv=notrunc seek=0
+	dd if=$(BIN)/$(S2).bin of=$@ bs=$(BS) conv=notrunc seek=1 count=$(S2_SECT)
+	dd if=$(BIN)/$(K).bin  of=$@ bs=$(BS) conv=notrunc seek=$$((1+$(S2_SECT))) count=$(K_SECT)
 
 run: image
-	$(QEMU) -drive format=raw,file=$(IMG)
+	qemu-system-i386 -drive format=raw,file=$(IMG)
 
 clean:
-	rm -rf $(BIN_DIR) $(DISK_DIR)
+	rm -rf $(BIN) $(DISK)
 
 .PHONY: all image run clean
