@@ -31,10 +31,13 @@ stage2_start:
     mov si, e820_retrieve_msg
     call printStatus
 
+    ; Load mini kernel 
+    call load_mini_kernel
+
     ; Sleep for 1.5 seconds before entering PM 
     mov ah, 0x86          ; wait command 
     mov cx, 0x0016        ; high word
-    mov dx, 0xE360        ; low word  
+    mov dx, 0xE430        ; low word  
     int 0x15
     
     ; Enter Protected Mode 
@@ -102,6 +105,43 @@ get_e820:
     popad
     ret
 
+load_mini_kernel:
+    push ax 
+    push bx 
+    push cx 
+    push dx 
+    push es 
+
+    ; Set Destination ES:BX 
+    mov ax, 0xFFFF  
+    mov es, ax 
+    mov bx, 0x0010
+
+    mov ah, 0x02    ; read op  
+    mov al, 0x20    ; num of sectors to read (32)
+    mov ch, 0 
+    mov cl, 0x22    ; sector 34 to start reading 
+    mov dh, 0 
+    mov dl, [boot_drive]
+    int 0x13 
+    jc .load_fail 
+
+    mov si, ker_success_msg 
+    call printStatus
+    jmp .load_ret 
+
+.load_fail:
+    mov si, ker_fail_msg
+    call printStatus
+
+.load_ret:
+    pop es 
+    pop dx 
+    pop cx 
+    pop bx 
+    pop ax 
+    ret
+
 ; To initialize Protected Mode 
 ; 1.) cli  
 ; 2.) Set up GDT wiht at least CODE Segment and Data Segment 
@@ -165,6 +205,9 @@ halt:
 ; ---------------
 ; Status Messages
 ; --------------- 
+ker_success_msg: db "Mini Kernel Loaded Successfully", 0x0D, 0x0A, 0 
+ker_fail_msg: db "Mini Kernel Load Failed", 0x0D, 0x0A, 0 
+
 stage2_success_msg: db "Second stage loaded successfully", 0x0D, 0x0A, 0
 e820_retrieve_msg:  db "E820 Retrieved Successfully", 0x0D, 0x0A, 0
 
@@ -179,7 +222,8 @@ e820_count: dw 0
 e820_buf:
     times(E820_MAX*24) db 0
 
-
+boot_drive:
+    db 0 
 
 ; ====================================== PROTECTED MODE ===========================================
 
