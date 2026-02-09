@@ -46,31 +46,8 @@ start:
 
     ; Load second stage to 0x0000:0x7E00 (phys 0x7E00)
     ; Use conventional RAM below 0xA0000 (0x00000–0x9FFFF)  
-
-    ; Set Destination 
-    xor ax, ax 
-    mov es, ax 
-    mov bx, 0x7E00
-
-    mov al, 0x0A    ; Number of sectors to read 
-    mov cl, 0x02    ; Sector to start with  
-
     call loadNextStage
-
-    ;
-    ; Load Mini Kernel to 0x00100000
-    ;
- 
-    ; Set Destination 
-    mov ax, 0xFFFF
-    mov es, ax 
-    mov bx, 0x0010 
-
-    mov al, 0x0C  ; Number of sectors to read 
-    mov cl, 0x0B  ; Sector to start with 
-
-    call loadNextStage
-
+    
     jmp pass_control
 
 ; Check A20 Address Line  
@@ -138,35 +115,42 @@ printStatus:
     ret 
 
 ; Read 32 sectors after boot sector to load 2nd stage  
-;
-; IN:
-;   EX:BX = destination 
-;   AL = Number of sectors to read 
-;   CL = Starting Sector 
-;
-loadNextStage:  
+loadNextStage:
+    push ax
+    push bx
+    push cx 
+    push dx 
+    push es 
+
+    ; Set Destination ES:BX 
+    xor ax, ax 
+    mov es, ax 
+    mov bx, 0x7E00
 
     mov ah, 0x02            ; read operation 
+    mov al, 0x20            ; number of sectors to read 
     mov ch, 0               ; cylinder  
+    mov cl, 2               ; sector 2 (start AFTER boot sector)
     mov dh, 0               ; head 
     mov dl, [boot_drive]    ; boot drive saved from BIOS at the beginning 
     int 0x13
     jc .load_fail
 
-    xor ax, ax 
-    mov es, ax 
     mov si, s2_success_msg
     call printStatus
     jmp .load_ret 
 
 .load_fail:
-    xor ax, ax 
-    mov es, ax 
     mov si, s2_fail_msg
     call printStatus
     jmp done ; Critical System Error --> Halt CPU  
 
 .load_ret:
+    pop es 
+    pop dx 
+    pop cx 
+    pop bx 
+    pop ax 
     ret
 
 ; Halt CPU 

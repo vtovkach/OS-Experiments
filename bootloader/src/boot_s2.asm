@@ -208,7 +208,7 @@ PM:
     stosw 
     jmp .print
 
-.done:
+.done 
 
     jmp halt
 
