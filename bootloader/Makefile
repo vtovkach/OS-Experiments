@@ -64,16 +64,18 @@ $(BIN_DIR)/$(KERNEL).elf: $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/mini_kernel.o ker
 
 $(BIN_DIR)/$(KERNEL).bin: $(BIN_DIR)/$(KERNEL).elf | $(BIN_DIR)
 	$(OBJCOPY) -O binary $< $@
+	truncate -s $$((512*$(KERNEL_SECTORS))) $@
 
 # -------------------------
 # Disk image
 # -------------------------
-image: $(IMG) $(BIN_DIR)/$(KERNEL).bin
+image: $(IMG)
 
-$(IMG): $(BIN_DIR)/$(STAGE1).bin $(BIN_DIR)/$(STAGE2).bin | $(DISK_DIR)
+$(IMG): $(BIN_DIR)/$(STAGE1).bin $(BIN_DIR)/$(STAGE2).bin $(BIN_DIR)/$(KERNEL).bin | $(DISK_DIR)
 	dd if=/dev/zero of=$@ bs=$(SECTOR_SIZE) count=$(TOTAL_SECTORS)
 	dd if=$(BIN_DIR)/$(STAGE1).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=0
 	dd if=$(BIN_DIR)/$(STAGE2).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=1
+	dd if=$(BIN_DIR)/$(KERNEL).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=13
 
 run: image
 	$(QEMU) -drive format=raw,file=$(IMG)
