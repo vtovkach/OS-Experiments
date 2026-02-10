@@ -185,7 +185,6 @@ boot_drive:
 ; ====================================== PROTECTED MODE ===========================================
 
 
-
 [bits 32]
 PM:
     mov ax, 0x10          ; DATA_SEL
@@ -216,7 +215,8 @@ PM:
 
 .done:
 
-    jmp halt
+    ; Jump to kernel entry CS:EIP 
+    jmp 0x08:0x00009600
 
 protected_mode_msg:
     db "Protected Mode Entered Successfully"
