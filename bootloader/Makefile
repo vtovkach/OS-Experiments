@@ -10,8 +10,8 @@ STAGE2 := boot_s2
 
 # Disk layout
 SECTOR_SIZE    := 512
-STAGE2_SECTORS := 32
-TOTAL_SECTORS  := 33   # 1 + stage2(32)
+STAGE2_SECTORS := 12
+TOTAL_SECTORS  := 13   # 1 + stage2(12)
 
 IMG := $(DISK_DIR)/disk.img
 
