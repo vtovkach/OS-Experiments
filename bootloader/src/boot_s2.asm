@@ -31,9 +31,6 @@ stage2_start:
     mov si, e820_retrieve_msg
     call printStatus
 
-    ; Load mini kernel 
-    call load_mini_kernel
-
     ; Sleep for 1.5 seconds before entering PM 
     mov ah, 0x86          ; wait command 
     mov cx, 0x0016        ; high word
@@ -105,44 +102,6 @@ get_e820:
     popad
     ret         
 
-; CHS read
-; Reads 32 sectors starting at CHS sector 34 (1-based) on C=0,H=0
-load_mini_kernel:
-    push ax
-    push bx
-    push cx
-    push dx
-    push es
-
-    mov ax, 0x0000
-    mov es, ax
-    mov bx, 0xBE00
-
-    mov ah, 0x02
-    mov al, 0x20 ; # sectors to read (32)
-    mov ch, 0
-    mov cl, 0x22 ; sector to start write (34)          
-    mov dh, 0
-    mov dl, [boot_drive]
-    int 0x13
-    jc .load_fail
-
-    mov si, ker_success_msg
-    call printStatus
-    jmp .load_ret
-
-.load_fail:
-    mov si, ker_fail_msg
-    call printStatus
-
-.load_ret:
-    pop es
-    pop dx
-    pop cx
-    pop bx
-    pop ax
-    ret
-
 ; To initialize Protected Mode 
 ; 1.) cli  
 ; 2.) Set up GDT wiht at least CODE Segment and Data Segment 
@@ -206,9 +165,6 @@ halt:
 ; ---------------
 ; Status Messages
 ; --------------- 
-ker_success_msg: db "Mini Kernel Loaded Successfully", 0x0D, 0x0A, 0 
-ker_fail_msg: db "Mini Kernel Load Failed", 0x0D, 0x0A, 0 
-
 stage2_success_msg: db "Second stage loaded successfully", 0x0D, 0x0A, 0
 e820_retrieve_msg:  db "E820 Retrieved Successfully", 0x0D, 0x0A, 0
 
