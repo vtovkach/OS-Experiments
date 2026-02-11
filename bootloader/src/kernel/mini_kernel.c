@@ -6,6 +6,10 @@
 
 static uint16_t* const vga = (uint16_t*) VGA_MEMORY;
 
+// Cursor Row is set to 1 due to Protected Mode message from bootloader stage 2  
+static uint8_t cursor_row = 1; 
+static uint8_t cursor_column = 0;
+
 static void clear_screen(void)
 {
     int screen_resolution = VGA_HEIGHT * VGA_WIDTH;
@@ -18,22 +22,63 @@ static void clear_screen(void)
     }
 }
 
-static void print(const char* str, uint8_t row, uint8_t col)
+static void print(const char* str)
 {
-    uint16_t pos = row * VGA_WIDTH + col;
-
     while (*str)
     {
-        vga[pos++] = ((uint16_t)0x0F << 8) | *str++;  
-        // 0x0F = white on black
+        char c = *str++;
+
+        if (c == '\n')
+        {
+            cursor_column = 0;
+            cursor_row++;
+        }
+        else
+        {
+            uint16_t cur_pos = (uint16_t)(VGA_WIDTH * cursor_row + cursor_column);
+            vga[cur_pos] = ((uint16_t)0x0F << 8) | (uint8_t)c;
+
+            cursor_column++;
+            if (cursor_column >= VGA_WIDTH)
+            {
+                cursor_column = 0;
+                cursor_row++;
+            }
+        }
+
+        if (cursor_row >= VGA_HEIGHT)
+        {
+            // temporary behavior (no scroll yet): just wrap to top for now, will add scroll later 
+            cursor_row = 0;
+        }
     }
+
+    // Will probably add later 
+    // Sync the blinking hardware cursor with your cursor 
+}
+static inline void outb(uint16_t port, uint8_t val) 
+{
+    __asm__ volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
+}
+
+static inline uint8_t inb(uint16_t port) 
+{
+    uint8_t ret;
+    __asm__ volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
+    return ret;
+}
+
+void vga_disable_cursor(void)
+{
+    outb(0x3D4, 0x0A);                  // cursor start register
+    outb(0x3D5, inb(0x3D5) | 0x20);     // set bit 5 -> disable
 }
 
 int kernel_main(void)
 {
-    clear_screen();
-    print("Kernel launched successfully", 12, 25);
-    
+    vga_disable_cursor();
+    print("Kernel Loaded Successfully\n");
+
     while (1)
     {
         __asm__ volatile ("hlt");
