@@ -4,6 +4,18 @@
 #define VGA_WIDTH  80
 #define VGA_HEIGHT 25
 
+struct e820_entry
+{
+
+    uint64_t base;
+    uint64_t length; 
+    uint32_t type; 
+    uint32_t acpi;
+
+} __attribute__((packed));
+
+extern struct e820_entry *e820_ptr;
+
 static uint16_t* const vga = (uint16_t*) VGA_MEMORY;
 
 // Cursor Row is set to 1 due to Protected Mode message from bootloader stage 2  
