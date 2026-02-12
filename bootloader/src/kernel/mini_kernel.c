@@ -34,6 +34,42 @@ static void clear_screen(void)
     }
 }
 
+static void put_char(char ch)
+{
+    if(ch == '\0')
+    {
+        return;
+    }
+    else if(ch == '\n')
+    {
+        cursor_row++; 
+        cursor_column = 0;
+    }
+    else
+    {
+        uint16_t char_to_print = ((uint16_t)0x0F << 8) | (uint8_t)ch;
+        uint16_t pos = (uint16_t)(cursor_row * VGA_WIDTH + cursor_column);
+        vga[pos] = char_to_print;
+        cursor_column++; 
+    }
+
+    // Check column cursor bound
+    if(cursor_column >= VGA_WIDTH)
+    {
+        cursor_row++; 
+        cursor_column = 0;
+    }
+
+    // Check row cursor bound 
+    if(cursor_row >= VGA_HEIGHT)
+    {
+        //clear_screen();
+        cursor_row = 0;
+    }
+
+    return; 
+}
+
 static void print(const char* str)
 {
     while (*str)
