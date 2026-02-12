@@ -68,6 +68,7 @@ static void print(const char* str)
     // Will probably add later 
     // Sync the blinking hardware cursor with your cursor 
 }
+
 static inline void outb(uint16_t port, uint8_t val) 
 {
     __asm__ volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
@@ -86,11 +87,23 @@ void vga_disable_cursor(void)
     outb(0x3D5, inb(0x3D5) | 0x20);     // set bit 5 -> disable
 }
 
+void display_e820()
+{
+
+}
+
 int kernel_main(void)
 {
     vga_disable_cursor();
     print("Kernel Loaded Successfully\n");
 
+    print("\n");
+    print("E820 Memory Layout Information\n");
+    print("==============================\n");
+    display_e820();
+
+
+    // Halt CPU at the end 
     while (1)
     {
         __asm__ volatile ("hlt");
