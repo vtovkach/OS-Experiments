@@ -122,6 +122,19 @@ static void print_uint32_b10(uint32_t num)
     return;
 }
 
+static void print_uint64_b16(uint64_t x)
+{
+    static const char* d = "0123456789ABCDEF";
+
+    print("0x");
+
+    for (int i = 15; i >= 0; --i)
+    {
+        uint8_t nib = (x >> (i * 4)) & 0xF;
+        put_char(d[nib]);
+    }
+}
+
 static inline void outb(uint16_t port, uint8_t val) 
 {
     __asm__ volatile ("outb %0, %1" : : "a"(val), "Nd"(port));
