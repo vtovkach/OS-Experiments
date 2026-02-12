@@ -16,6 +16,8 @@ struct e820_entry
 
 extern struct e820_entry *e820_ptr;
 
+extern uint32_t e820_count;
+
 static uint16_t* const vga = (uint16_t*) VGA_MEMORY;
 
 // Cursor Row is set to 1 due to Protected Mode message from bootloader stage 2  
@@ -34,7 +36,7 @@ static void clear_screen(void)
     }
 }
 
-static void put_char(char ch)
+static void putchar(char ch)
 {
     if(ch == '\0')
     {
@@ -110,14 +112,14 @@ static void print_uint32_b10(uint32_t num)
     if(num < 10)
     {   
         char ch = '0' + num % 10;
-        put_char(ch);
+        putchar(ch);
 
         return; 
     }
 
     print_uint32_b10(num / 10);
     char ch = '0' + num % 10; 
-    put_char(ch);
+    putchar(ch);
 
     return;
 }
@@ -131,7 +133,7 @@ static void print_uint64_b16(uint64_t x)
     for (int i = 15; i >= 0; --i)
     {
         uint8_t nib = (x >> (i * 4)) & 0xF;
-        put_char(d[nib]);
+        putchar(d[nib]);
     }
 }
 
@@ -154,8 +156,26 @@ void vga_disable_cursor(void)
 }
 
 void display_e820()
-{
+{   
+    print("\nE820 Memory Layout Information\n");
+    print("===============================================\n");
+    print(" Address Range                            Type\n");
+    print("===============================================\n");
 
+    for(int i = 0; i < e820_count; i++)
+    {
+        struct e820_entry cur_entry = e820_ptr[i];
+
+        if(cur_entry.type == 0)
+            break; 
+
+        print_uint64_b16(cur_entry.base);
+        print("--");
+        print_uint64_b16(cur_entry.base + cur_entry.length);
+        print("     ");
+        print_uint32_b10(cur_entry.type);
+        putchar('\n');
+    }
 }
 
 int kernel_main(void)
@@ -163,9 +183,6 @@ int kernel_main(void)
     vga_disable_cursor();
     print("Kernel Loaded Successfully\n");
 
-    print("\n");
-    print("E820 Memory Layout Information\n");
-    print("==============================\n");
     display_e820();
 
 
