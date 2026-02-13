@@ -16,17 +16,22 @@ STAGE2_SECTORS := 12
 KERNEL_SECTORS := 20
 TOTAL_SECTORS  := 33   # 1 + stage2(12) + kernel(20)
 
-IMG := $(DISK_DIR)/disk.img
+# REAL TARGET DISK (DANGEROUS!)
+# Use the whole device, e.g. /dev/sdb (NOT /dev/sdb1)
+DEV ?= /dev/sda
 
-QEMU := qemu-system-i386
-
+ASM := nasm
 CC := gcc
 LD := ld
 OBJCOPY := objcopy
+
 CFLAGS := -m32 -ffreestanding -fno-pie -fno-pic -fno-stack-protector -nostdlib
 LDFLAGS := -m elf_i386 -T kernel.ld
 
-all: image
+# -------------------------
+# Default: build + flash to real disk
+# -------------------------
+all: flash
 
 # Directories
 $(BIN_DIR):
@@ -45,13 +50,14 @@ $(BIN_DIR)/$(STAGE1).bin: $(SRC_DIR)/$(STAGE1).asm | $(BIN_DIR)
 	$(ASM) -f bin $(ASMFLAGS) $< -o $@
 
 # -------------------------
-# Stage 2 (flat binary)
+# Stage 2 (flat binary, padded to STAGE2_SECTORS)
 # -------------------------
 $(BIN_DIR)/$(STAGE2).bin: $(SRC_DIR)/$(STAGE2).asm | $(BIN_DIR)
 	$(ASM) -f bin $(ASMFLAGS) $< -o $@
+	truncate -s $$(( $(SECTOR_SIZE) * $(STAGE2_SECTORS) )) $@
 
 # -------------------------
-# Kernel (ELF + flat bin)
+# Kernel (ELF + flat bin, padded to KERNEL_SECTORS)
 # -------------------------
 $(OBJ_DIR)/kernel_entry.o: $(SRC_DIR)/kernel/kernel_entry.asm | $(OBJ_DIR)
 	$(ASM) -f elf32 $(ASMFLAGS) $< -o $@
@@ -64,23 +70,24 @@ $(BIN_DIR)/$(KERNEL).elf: $(OBJ_DIR)/kernel_entry.o $(OBJ_DIR)/mini_kernel.o ker
 
 $(BIN_DIR)/$(KERNEL).bin: $(BIN_DIR)/$(KERNEL).elf | $(BIN_DIR)
 	$(OBJCOPY) -O binary $< $@
-	truncate -s $$((512*$(KERNEL_SECTORS))) $@
+	truncate -s $$(( $(SECTOR_SIZE) * $(KERNEL_SECTORS) )) $@
 
 # -------------------------
-# Disk image
+# Flash to real disk ONLY (no QEMU, no disk.img)
+# Writes ONLY the first TOTAL_SECTORS sectors, leaving the rest of the disk unchanged.
 # -------------------------
-image: $(IMG)
-
-$(IMG): $(BIN_DIR)/$(STAGE1).bin $(BIN_DIR)/$(STAGE2).bin $(BIN_DIR)/$(KERNEL).bin | $(DISK_DIR)
-	dd if=/dev/zero of=$@ bs=$(SECTOR_SIZE) count=$(TOTAL_SECTORS)
-	dd if=$(BIN_DIR)/$(STAGE1).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=0
-	dd if=$(BIN_DIR)/$(STAGE2).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=1
-	dd if=$(BIN_DIR)/$(KERNEL).bin of=$@ bs=$(SECTOR_SIZE) conv=notrunc seek=13
-
-run: image
-	$(QEMU) -m 32G -no-reboot -drive format=raw,file=$(IMG)
+flash: $(BIN_DIR)/$(STAGE1).bin $(BIN_DIR)/$(STAGE2).bin $(BIN_DIR)/$(KERNEL).bin
+	@echo "=== DANGER ==="
+	@echo "About to write the boot image to: $(DEV)"
+	@echo "This will overwrite the first $(TOTAL_SECTORS) sectors ($(shell expr $(TOTAL_SECTORS) \* $(SECTOR_SIZE)) bytes)."
+	@echo "Use a whole-disk device like /dev/sdb (NOT /dev/sdb1)."
+	@echo "=============="
+	sudo dd if=$(BIN_DIR)/$(STAGE1).bin of=$(DEV) bs=$(SECTOR_SIZE) conv=fsync seek=0 status=progress
+	sudo dd if=$(BIN_DIR)/$(STAGE2).bin of=$(DEV) bs=$(SECTOR_SIZE) conv=fsync seek=1 status=progress
+	sudo dd if=$(BIN_DIR)/$(KERNEL).bin of=$(DEV) bs=$(SECTOR_SIZE) conv=fsync seek=13 status=progress
+	sync
 
 clean:
 	rm -rf $(BIN_DIR) $(DISK_DIR) $(OBJ_DIR)
 
-.PHONY: all image run clean
+.PHONY: all flash clean
