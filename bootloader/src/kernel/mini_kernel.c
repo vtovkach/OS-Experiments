@@ -1,3 +1,7 @@
+
+
+// BOOTLOADER KERNEL TEST CODE 
+
 #include <stdint.h>
 
 #define VGA_MEMORY 0xB8000
