@@ -1,4 +1,8 @@
 
+ 
+; BOOTLOADER KERNEL TEST CODE 
+
+
 BITS 32 
 
 global _start
