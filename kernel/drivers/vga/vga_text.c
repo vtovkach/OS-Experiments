@@ -4,13 +4,12 @@
 #define VGA_HEIGHT  25 
 #define VGA_MEMORY  0xB8000
 
-// I will see later if I want to make cursor data static and expose interface to other translation units  
-int cursor_row = 0;
-int cursor_column = 0; 
+static int cursor_row = 1;
+static int cursor_column = 0; 
 
 static uint16_t *vga = (uint16_t *) VGA_MEMORY;
 
-void putchar(char ch)
+void vga_putchar(char ch)
 {
     if(ch == '\0')
     {
@@ -46,7 +45,7 @@ void putchar(char ch)
     return; 
 }
 
-void print(const char* str)
+void vga_print(const char* str)
 {
     while (*str)
     {

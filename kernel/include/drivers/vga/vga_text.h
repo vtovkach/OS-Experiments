@@ -1,8 +1,8 @@
 #ifndef VGA_TEXT
 #define VGA_TEXT
 
-void putchar(char ch);
+void vga_putchar(char ch);
 
-void print(const char* str);
+void vga_print(const char* str);
 
 #endif

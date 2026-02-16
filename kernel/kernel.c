@@ -6,8 +6,10 @@
 int kmain()
 {
 
-    print("Kernel Loaded Successfully\n");
-    print_uint32_b10(54);
+    vga_print("Kernel loaded successfully!\n");
+    vga_print_uint32_b10(2026);
+    vga_putchar('\n');
+    vga_print_uint64_b16(2026);
     
     return 0;
 }
