@@ -1,4 +1,4 @@
-# Allowed C Headers for Bare-Metal / Freestanding Code
+# C Headers for Bare-Metal / Freestanding Code
 
 ## Allowed
 - <stdint.h>
