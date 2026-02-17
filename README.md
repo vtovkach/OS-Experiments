@@ -1,20 +1,24 @@
-# OS-Experiments
+# Naiad
 
-This repository contains low-level operating system experiments.
+Naiad is a custom x86 operating system developed from scratch in C, that will support both BIOS and UEFI boot environments.
 
----
+## Architecture
 
-## Active Projects
+- Custom BIOS bootloader
+- UEFI bootloader (planned)
+- x86 kernel implemented in C
+- Early-stage physical and virtual memory management
+- Hardware initialization (GDT, IDT, interrupts)
 
-- **[BIOS Real-Mode Bootloader](https://github.com/vtovkach/OS-Experiments/tree/main/bootloader)**  
-  Low-level bootloader experiments using BIOS interrupts and real-mode execution.
+## Goals
 
----
+- Unified kernel entry for BIOS and UEFI
+- Structured memory management (PMM → VMM)
+- Modular and maintainable architecture
+- Progressive expansion toward a full operating system
 
-## Reference Documents
+## References
 
-- [Intel® Software Developer’s Manual](https://github.com/vtovkach/OS-Experiments/tree/main/docs)
-- [BIOS Interrupt Reference](https://wiki.osdev.org/BIOS)
-- [OSDev Wiki Articles](https://wiki.osdev.org/Expanded_Main_Page)
-- [x86 Real-Mode Memory Map](https://wiki.osdev.org/Memory_Map_(x86))
-
+- Intel® 64 and IA-32 Architectures Software Developer’s Manual  
+- OSDev Wiki  
+- x86 Memory Map Documentation
