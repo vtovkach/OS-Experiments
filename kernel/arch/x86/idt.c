@@ -21,17 +21,15 @@ struct __attribute__((packed)) idtr
     uint32_t base; 
 };
 
-int idt_Init()
+void idt_Init(void)
 {
     struct idtr idt = {.limit = (IDT_ENTRIES * IDT_DESC_SIZE) - 1, .base = IDT_BASE};
-    
-    asm volatile 
+
+    __asm__ __volatile__ 
     (
-        
+        "lidt %0"
         :
-        : "r"(limit)
+        : "m"(idt)
+        : "memory"
     );
-
-
-
 }
