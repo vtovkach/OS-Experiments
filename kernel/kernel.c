@@ -5,6 +5,10 @@
 
 #define GDT_BASE 0x0000BE00
 
+
+extern void idt_init(void);
+
+
 int kmain()
 {
 
@@ -12,6 +16,10 @@ int kmain()
     vga_print_uint32_b10(2026);
     vga_putchar('\n');
     vga_print_uint64_b16(2026);
+
+    vga_print("Setting up IDTR\n");
+    idt_init();
+    vga_print("Loaded IDTR successfully.");
     
     return 0;
 }
